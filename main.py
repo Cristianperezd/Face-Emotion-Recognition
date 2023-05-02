@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 
 
 train_folder = "img/train"
+test_folder = "img/test"
 emotion_folders = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
 
@@ -26,6 +27,14 @@ for emotion_folder in emotion_folders:
         image_path = os.path.join(emotion_folder_path, image_file)
         label = emotion_folders.index(emotion_folder)
         images.append((image_path, label))
+
+images_test = []
+for emotion_folder in emotion_folders:
+    emotion_folder_path = os.path.join(test_folder, emotion_folder)
+    for image_file in os.listdir(emotion_folder_path):
+        image_path = os.path.join(emotion_folder_path, image_file)
+        label = emotion_folders.index(emotion_folder)
+        images_test.append((image_path, label))
 
 
 # Definimos los parámetros de LBP
@@ -55,12 +64,35 @@ for path,emotion in images:
     if i == 0:
         print(lbp_histograms[0][1])
     i = 2
+
 print('Final LBP')
+lbp_histograms_test = []
+emotions_test = []
+for path,emotion in images_test:
+
+    img = io.imread(path)
+
+    lbp = local_binary_pattern(img, n_points, radius, method)
+
+    # Extraemos un histograma de los patrones binarios locales
+    n_bins = int(lbp.max() + 1)
+    hist, _ = np.histogram(lbp, density=True, bins=n_bins, range=(0, n_bins))
+
+    # Normalizamos el histograma para que sume 1
+    hist /= np.sum(hist)
+    lbp_histograms_test.append(hist)
+    emotions_test.append(emotion)
+    if i == 0:
+        print(lbp_histograms_test[0][1])
+    i = 2
+
 
 # Dividimos los datos en conjunto de entrenamiento y de prueba
 """
 X = np.array(lbp_histograms)
 y = np.array(emotions)"""
+
+#Train
 
 # Obtener la longitud máxima de los histogramas
 max_len = max(len(hist) for hist in lbp_histograms)
@@ -77,25 +109,42 @@ X= np.array(padded_histograms)
 # Convertir las emociones a un array de NumPy
 y = np.array(emotions)
 
+#Test
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-"""
+max_len_test = max(len(hist) for hist in lbp_histograms_test)
+
+# Rellenar los histogramas con ceros al final para que tengan la misma longitud
+padded_histograms_test = []
+for hist in lbp_histograms_test:
+    padded_hist = np.pad(hist, (0, max_len_test - len(hist)), mode='constant')
+    padded_histograms_test.append(padded_hist)
+
+# Convertir los datos de entrada a un array de NumPy homogéneo
+X_test= np.array(padded_histograms_test)
+
+# Convertir las emociones a un array de NumPy
+y_test = np.array(emotions_test)
+
+
+
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 # Creamos un clasificador KNN con 5 vecinos
-knn = KNeighborsClassifier(n_neighbors=10)
+knn = KNeighborsClassifier(n_neighbors=5)
 
 # Entrenamos el clasificador con los datos de entrenamiento
-knn.fit(X_train, y_train)
+knn.fit(X, y)
 
 # Evaluamos el clasificador con los datos de prueba
 accuracy = knn.score(X_test, y_test)
-print("Accuracy:", accuracy)
+print("Accuracy:", accuracy*100)
 
 
-
+"""
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
 joblib.dump(knn, "modelo_knn.joblib")"""
 
-clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
+"""clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
 models,predictions = clf.fit(X_train, X_test, y_train, y_test)
 print(models)
-
+"""
