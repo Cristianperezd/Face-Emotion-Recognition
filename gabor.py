@@ -19,8 +19,6 @@ import numpy as np
 
 
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
-
 from sklearn.model_selection import train_test_split
 
 
@@ -46,101 +44,92 @@ for emotion_folder in emotion_folders:
         label = emotion_folders.index(emotion_folder)
         images_test.append((image_path, label))
 
+frequencies = [0.1, 0.2, 0.4]
+orientations = [0, np.pi/4, np.pi/2, 3*np.pi/4]
 
-# Definimos los parámetros de LBP
-radius = 1
-n_points = 8 * radius
-method = 'uniform'
+# Creamos los kernels de Gabor
+kernels = []
+for frequency in frequencies:
+    for theta in orientations:
+        kernel = np.real(gabor_kernel(frequency, theta=theta))
+        kernels.append(kernel)
 
+final_train = []
 
-
-lbp_histograms = []
 emotions = []
-i = 0
 for path,emotion in images:
 
     img = io.imread(path)
     img = median(img)
     img = equalize_hist(img)
 
-    lbp = local_binary_pattern(img, n_points, radius, method)
+    results = []
+    for kernel in kernels:
+        filtered = ndi.convolve(img, kernel, mode='wrap')
+        results.append(filtered)
 
-    # Extraemos un histograma de los patrones binarios locales
-    n_bins = int(lbp.max() + 1)
-    hist, _ = np.histogram(lbp, density=True, bins=n_bins, range=(0, n_bins))
+        # Concatenamos los resultados en una sola matriz de características
+    feature_matrix = np.concatenate([r.flatten() for r in results])
 
-    # Normalizamos el histograma para que sume 1
-    hist /= np.sum(hist)
-    lbp_histograms.append(hist)
+    # Normalizamos los valores de las características entre 0 y 1
+    feature_matrix = (feature_matrix - feature_matrix.min()) / (feature_matrix.max() - feature_matrix.min())
+
     emotions.append(emotion)
-    if i == 0:
-        print(lbp_histograms[0][1])
-    i = 2
 
-print('Final LBP')
-lbp_histograms_test = []
+    final_train.append(feature_matrix)
+    
+
+
 emotions_test = []
+final_test = []
+
 for path,emotion in images_test:
 
     img = io.imread(path)
     img = median(img)
     img = equalize_hist(img)
 
+    results = []
+    for kernel in kernels:
+        filtered = ndi.convolve(img, kernel, mode='wrap')
+        results.append(filtered)
 
+        # Concatenamos los resultados en una sola matriz de características
+    feature_matrix = np.concatenate([r.flatten() for r in results])
 
-    lbp = local_binary_pattern(img, n_points, radius, method)
+    # Normalizamos los valores de las características entre 0 y 1
+    feature_matrix = (feature_matrix - feature_matrix.min()) / (feature_matrix.max() - feature_matrix.min())
 
-    # Extraemos un histograma de los patrones binarios locales
-    n_bins = int(lbp.max() + 1)
-    hist, _ = np.histogram(lbp, density=True, bins=n_bins, range=(0, n_bins))
-
-    # Normalizamos el histograma para que sume 1
-    hist /= np.sum(hist)
-    lbp_histograms_test.append(hist)
     emotions_test.append(emotion)
-    if i == 0:
-        print(lbp_histograms_test[0][1])
-    i = 2
+
+    final_test.append(feature_matrix)
 
 
-# Dividimos los datos en conjunto de entrenamiento y de prueba
-"""
-X = np.array(lbp_histograms)
-y = np.array(emotions)"""
 
-#Train
+########################################################################
 
-# Obtener la longitud máxima de los histogramas
-max_len = max(len(hist) for hist in lbp_histograms)
 
-# Rellenar los histogramas con ceros al final para que tengan la misma longitud
-padded_histograms = []
-for hist in lbp_histograms:
-    padded_hist = np.pad(hist, (0, max_len - len(hist)), mode='constant')
-    padded_histograms.append(padded_hist)
 
+
+
+
+##########################################################################
 
 
 
 
 # Convertir los datos de entrada a un array de NumPy homogéneo
-X= np.array(padded_histograms)
+X= np.array(final_train)
 
 # Convertir las emociones a un array de NumPy
 y = np.array(emotions)
 
 #Test
 
-max_len_test = max(len(hist) for hist in lbp_histograms_test)
 
-# Rellenar los histogramas con ceros al final para que tengan la misma longitud
-padded_histograms_test = []
-for hist in lbp_histograms_test:
-    padded_hist = np.pad(hist, (0, max_len_test - len(hist)), mode='constant')
-    padded_histograms_test.append(padded_hist)
 
 # Convertir los datos de entrada a un array de NumPy homogéneo
-X_test= np.array(padded_histograms_test)
+X_test= np.array(final_test)
 
 # Convertir las emociones a un array de NumPy
 y_test = np.array(emotions_test)
@@ -159,17 +148,11 @@ knn.fit(X, y)
 accuracy = knn.score(X_test, y_test)
 print("Accuracy:", accuracy*100)
 """
-rfc = RandomForestClassifier()
-
-rfc.fit(X, y)
-accuracy = rfc.score(X_test, y_test)
-print("Accuracy:", accuracy*100)
 
 """
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
 joblib.dump(knn, "modelo_knn.joblib")"""
 
-"""clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
+clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
 models,predictions = clf.fit(X, X_test, y, y_test)
 print(models)
-"""
