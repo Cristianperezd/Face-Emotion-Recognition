@@ -20,6 +20,9 @@ import numpy as np
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint
+from sklearn.model_selection import GridSearchCV
 
 from sklearn.model_selection import train_test_split
 
@@ -50,7 +53,7 @@ for emotion_folder in emotion_folders:
 # Definimos los parámetros de LBP
 radius = 1
 n_points = 8 * radius
-method = 'uniform'
+method = 'uniform' 
 
 
 
@@ -159,11 +162,68 @@ knn.fit(X, y)
 accuracy = knn.score(X_test, y_test)
 print("Accuracy:", accuracy*100)
 """
-rfc = RandomForestClassifier()
+
+# Define los hiperparámetros que deseas ajustar y sus rangos
+param_dist = {
+    'n_estimators': randint(10, 100),
+    'max_depth': randint(2, 10),
+    'min_samples_split': randint(2, 10),
+    'min_samples_leaf': randint(1, 5),
+    'max_features': ['sqrt', 'log2', None],
+    'bootstrap': [True, False],
+    'criterion': ['gini', 'entropy']
+}
+
+# Define el modelo de Random Forest
+"""rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
+
+# Realiza la búsqueda aleatoria de hiperparámetros
+random_search = RandomizedSearchCV(
+    rfc,
+    param_distributions=param_dist,
+    n_iter=50, # Número de iteraciones aleatorias
+    cv=5, # Número de folds para cross-validation
+    scoring='accuracy', # Métrica a optimizar
+    n_jobs=-1, # Número de núcleos a utilizar (-1 utiliza todos los disponibles)
+    verbose=1, # Nivel de detalle en la salida
+    random_state=42 # Semilla aleatoria para reproducibilidad
+)
+
+# Entrena el modelo con la búsqueda de hiperparámetros
+random_search.fit(X, y)
+ ámetros encontrados y su puntuación
+print("Mejores hiperparámetros encontrados:")
+print(random_search.best_params_)
+print("Puntuación de validación cruzada del mejor modelo:")
+print(random_search.best_score_)
+
+"""
+rfc = RandomForestClassifier(random_state=42)
+
+param_grid = {
+    'n_estimators' : [50,100,200],
+    'max_depth' : [None, 5,10,20],
+    'min_samples_split' : [2,5,10],
+    'min_samples_leaf' : [1,2,4],
+    'max_features' : ['sqrt','log2']
+}
+grid_search = GridSearchCV(estimator=rfc,param_grid=param_grid, cv=5,n_jobs=1,verbose=2)
+
+grid_search.fit(X,y)
+
+print("Mejores hiperparámetros encontrados:")
+print(grid_search.best_params_)
+print("Puntuación de validación cruzada del mejor modelo:")
+print(grid_search.best_score_)
+
+
+"""rfc = RandomForestClassifier()
+#rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
+
 
 rfc.fit(X, y)
 accuracy = rfc.score(X_test, y_test)
-print("Accuracy:", accuracy*100)
+print("Accuracy:", accuracy*100)"""
 
 """
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
