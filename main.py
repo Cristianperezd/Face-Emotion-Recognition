@@ -16,7 +16,7 @@ from lazypredict.Supervised import LazyClassifier
 
 from skimage.feature import local_binary_pattern
 import numpy as np
-
+import sklearn
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
