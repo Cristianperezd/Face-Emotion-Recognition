@@ -13,6 +13,8 @@ from lazypredict.Supervised import LazyClassifier
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
 
 
 
@@ -41,6 +43,7 @@ for emotion_folder in emotion_folders:
 final_train = []
 
 emotions = []
+i = 0
 for path,emotion in images:
 
     img = io.imread(path)
@@ -54,6 +57,10 @@ for path,emotion in images:
     emotions.append(emotion)
 
     final_train.append(fd)
+    if i == 0:
+    
+        print(final_train[0])
+    i = i + 1
     
 
 
@@ -122,7 +129,16 @@ print("Accuracy:", accuracy*100)
 """
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
 joblib.dump(knn, "modelo_knn.joblib")"""
-
+"""
 clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
 models,predictions = clf.fit(X, X_test, y, y_test)
 print(models)
+"""
+
+rfc = RandomForestClassifier()
+#rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
+
+
+rfc.fit(X, y)
+accuracy = rfc.score(X_test, y_test)
+print("Accuracy:", accuracy*100)

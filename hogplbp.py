@@ -23,6 +23,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint
 from sklearn.model_selection import GridSearchCV
+from skimage.feature import hog
+
 
 from sklearn.model_selection import train_test_split
 
@@ -58,6 +60,7 @@ method = 'nri_uniform'
 
 
 lbp_histograms = []
+hog_train = []
 emotions = []
 i = 0
 for path,emotion in images:
@@ -67,8 +70,12 @@ for path,emotion in images:
     img = equalize_hist(img)
 
     lbp = local_binary_pattern(img, n_points, radius, method)
-    
 
+    # Extraemos el vector de características utilizando HOG
+    fd, hog_image = hog(img, orientations=8, pixels_per_cell=(16, 16),
+                        cells_per_block=(1, 1), visualize=True)
+    
+    hog_train.append(fd)
     # Extraemos un histograma de los patrones binarios locales
     n_bins = int(lbp.max() + 1)
     hist, _ = np.histogram(lbp, density=True, bins=n_bins, range=(0, n_bins))
@@ -81,9 +88,11 @@ for path,emotion in images:
         print(lbp_histograms[0])
     i = 2
 
-print('Final LBP')
+print('Final TRAIN set features')
 lbp_histograms_test = []
 emotions_test = []
+hog_test = []
+
 for path,emotion in images_test:
 
     img = io.imread(path)
@@ -94,6 +103,10 @@ for path,emotion in images_test:
 
     lbp = local_binary_pattern(img, n_points, radius, method)
 
+    fd, hog_image = hog(img, orientations=8, pixels_per_cell=(16, 16),
+                        cells_per_block=(1, 1), visualize=True)
+    
+    hog_test.append(fd)
     # Extraemos un histograma de los patrones binarios locales
     n_bins = int(lbp.max() + 1)
     hist, _ = np.histogram(lbp, density=True, bins=n_bins, range=(0, n_bins))
@@ -118,17 +131,19 @@ y = np.array(emotions)"""
 max_len = max(len(hist) for hist in lbp_histograms)
 
 # Rellenar los histogramas con ceros al final para que tengan la misma longitud
-padded_histograms = []
-for hist in lbp_histograms:
+features_train = []
+for index,hist in enumerate(lbp_histograms):
     padded_hist = np.pad(hist, (0, max_len - len(hist)), mode='constant')
-    padded_histograms.append(padded_hist)
+    features = [padded_hist, hog_train[index]]
+
+    features_train.append(features)
 
 
 
 
 
 # Convertir los datos de entrada a un array de NumPy homogéneo
-X= np.array(padded_histograms)
+X= np.array(features_train)
 
 # Convertir las emociones a un array de NumPy
 y = np.array(emotions)
@@ -138,13 +153,15 @@ y = np.array(emotions)
 max_len_test = max(len(hist) for hist in lbp_histograms_test)
 
 # Rellenar los histogramas con ceros al final para que tengan la misma longitud
-padded_histograms_test = []
+features_test = []
 for hist in lbp_histograms_test:
     padded_hist = np.pad(hist, (0, max_len_test - len(hist)), mode='constant')
-    padded_histograms_test.append(padded_hist)
+    features = [padded_hist, hog_test[index]]
+
+    features_test.append(features)
 
 # Convertir los datos de entrada a un array de NumPy homogéneo
-X_test= np.array(padded_histograms_test)
+X_test= np.array(features_test)
 
 # Convertir las emociones a un array de NumPy
 y_test = np.array(emotions_test)
