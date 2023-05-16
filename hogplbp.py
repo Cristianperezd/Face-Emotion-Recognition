@@ -134,7 +134,7 @@ max_len = max(len(hist) for hist in lbp_histograms)
 features_train = []
 for index,hist in enumerate(lbp_histograms):
     padded_hist = np.pad(hist, (0, max_len - len(hist)), mode='constant')
-    features = [padded_hist, hog_train[index]]
+    features = np.array(padded_hist).tolist()+np.array(hog_train[index]).tolist()
 
     features_train.append(features)
 
@@ -154,9 +154,9 @@ max_len_test = max(len(hist) for hist in lbp_histograms_test)
 
 # Rellenar los histogramas con ceros al final para que tengan la misma longitud
 features_test = []
-for hist in lbp_histograms_test:
+for index,hist in enumerate(lbp_histograms_test):
     padded_hist = np.pad(hist, (0, max_len_test - len(hist)), mode='constant')
-    features = [padded_hist, hog_test[index]]
+    features = np.array(padded_hist).tolist()+np.array(hog_test[index]).tolist()
 
     features_test.append(features)
 
@@ -240,8 +240,12 @@ rfc = RandomForestClassifier()
 
 
 rfc.fit(X, y)
+accuracy_train = rfc.score(X, y)
 accuracy = rfc.score(X_test, y_test)
-print("Accuracy:", accuracy*100)
+
+
+print("Accuracy train:", accuracy_train*100)
+print("Accuracy test:", accuracy*100)
 
 """
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
