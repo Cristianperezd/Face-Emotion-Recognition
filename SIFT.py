@@ -1,0 +1,71 @@
+import cv2
+import os
+from skimage import io
+import time
+import joblib
+from skimage.filters import median
+from skimage.exposure import equalize_hist
+
+from scipy import ndimage as ndi
+
+from skimage.feature import SIFT
+import numpy as np
+import sklearn
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint
+from sklearn.model_selection import GridSearchCV
+
+from sklearn.model_selection import train_test_split
+
+
+train_folder = "img/train"
+test_folder = "img/test"
+emotion_folders = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+
+
+images = []
+for emotion_folder in emotion_folders:
+    emotion_folder_path = os.path.join(train_folder, emotion_folder)
+    for image_file in os.listdir(emotion_folder_path):
+        image_path = os.path.join(emotion_folder_path, image_file)
+        label = emotion_folders.index(emotion_folder)
+        images.append((image_path, label))
+
+images_test = []
+for emotion_folder in emotion_folders:
+    emotion_folder_path = os.path.join(test_folder, emotion_folder)
+    for image_file in os.listdir(emotion_folder_path):
+        image_path = os.path.join(emotion_folder_path, image_file)
+        label = emotion_folders.index(emotion_folder)
+        images_test.append((image_path, label))
+
+
+#########################################################
+################IMPLEMENTACIÓ SIFT#######################
+#########################################################
+
+##########################################################################
+# Convertir los datos de entrada a un array de NumPy homogéneo
+X= np.array(final_train)
+
+# Convertir las emociones a un array de NumPy
+y = np.array(emotions)
+
+#Test
+
+# Convertir los datos de entrada a un array de NumPy homogéneo
+X_test= np.array(final_test)
+
+# Convertir las emociones a un array de NumPy
+y_test = np.array(emotions_test)
+
+rfc = RandomForestClassifier()
+#rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
+
+
+rfc.fit(X, y)
+accuracy = rfc.score(X_test, y_test)
+print("Accuracy:", accuracy*100)

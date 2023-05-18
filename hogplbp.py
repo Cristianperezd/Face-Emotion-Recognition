@@ -11,7 +11,7 @@ from scipy import ndimage as ndi
 
 
 
-from lazypredict.Supervised import LazyClassifier
+#from lazypredict.Supervised import LazyClassifier
 
 
 from skimage.feature import local_binary_pattern
@@ -38,7 +38,7 @@ emotion_folders = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surpr
 images = []
 for emotion_folder in emotion_folders:
     emotion_folder_path = os.path.join(train_folder, emotion_folder)
-    for image_file in os.listdir(emotion_folder_path):
+    for image_file in os.listdir(emotion_folder_path)[:10]:
         image_path = os.path.join(emotion_folder_path, image_file)
         label = emotion_folders.index(emotion_folder)
         images.append((image_path, label))
@@ -46,7 +46,7 @@ for emotion_folder in emotion_folders:
 images_test = []
 for emotion_folder in emotion_folders:
     emotion_folder_path = os.path.join(test_folder, emotion_folder)
-    for image_file in os.listdir(emotion_folder_path):
+    for image_file in os.listdir(emotion_folder_path)[:10]:
         image_path = os.path.join(emotion_folder_path, image_file)
         label = emotion_folders.index(emotion_folder)
         images_test.append((image_path, label))
