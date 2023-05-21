@@ -53,12 +53,12 @@ pretrained_model = tf.keras.applications.ResNet50(include_top = False,
                                                        pooling = 'avg',
                                                        classes = 7,
                                                        weights='imagenet')
-for each_layer in pretrained_model.layers:
-    each_layer.trainable = False
+"""for each_layer in pretrained_model.layers:
+    each_layer.trainable = False"""
 resnet_model.add(pretrained_model)
 
 resnet_model.add(Flatten())
-resnet_model.add(Dense(512,activation='relu'))
+"""resnet_model.add(Dense(512,activation='relu'))"""
 resnet_model.add(Dense(7,activation='softmax'))
 
 resnet_model.compile(
@@ -68,6 +68,6 @@ resnet_model.compile(
 )
 resnet_model.summary()
 
-checkpoint = ModelCheckpoint("resnet_trained.h5", monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+checkpoint = ModelCheckpoint("resnet_trained2.h5", monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 
 history = resnet_model.fit(x = train_generator, epochs = epochs, validation_data = validation_generator, callbacks=[checkpoint])
