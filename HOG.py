@@ -2,7 +2,7 @@ import cv2
 import os
 from skimage import io
 import time
-#import joblib
+import joblib
 from skimage.filters import median
 from skimage.exposure import equalize_hist
 
@@ -14,6 +14,11 @@ from lazypredict.Supervised import LazyClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+
+
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 
@@ -135,10 +140,39 @@ models,predictions = clf.fit(X, X_test, y, y_test)
 print(models)
 """
 
-rfc = RandomForestClassifier()
+rfc = RandomForestClassifier(max_depth=50, n_estimators=1000)
 #rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
 
+"""rfc.fit(X, y)
 
-rfc.fit(X, y)
+y_pred = rfc.predict(X_test)
+
+cm = confusion_matrix(y_test,y_pred)
+
+fig, ax = plt.subplots()
+
+class_labels = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+
+# Crea el mapa de calor utilizando la matriz de confusión
+heatmap = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=class_labels, yticklabels=class_labels)
+
+# Establece etiquetas para los ejes x e y
+ax.set_xlabel('Predicted Emotions')
+ax.set_ylabel('True Emotions')
+
+# Establece el título del gráfico
+ax.set_title('Confusion Matrix')
+
+# Muestra el mapa de calor
+plt.show()
+"""
+
+
+accuracy_train = rfc.score(X, y)
 accuracy = rfc.score(X_test, y_test)
-print("Accuracy:", accuracy*100)
+
+
+print("Accuracy train:", accuracy_train*100)
+print("Accuracy test:", accuracy*100)
+
+joblib.dump(rfc, "modelo_rfc_hog.joblib")

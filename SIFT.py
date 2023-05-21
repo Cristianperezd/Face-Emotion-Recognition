@@ -5,7 +5,7 @@ import time
 import joblib
 from skimage.filters import median
 from skimage.exposure import equalize_hist
-from skimage.feature import sift
+from skimage.feature import SIFT
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import randint
@@ -51,11 +51,13 @@ for path, emotion in images:
     # Extraemos el vector de características utilizando SIFT
     #sift = cv2.SIFT_create()
     #keypoints, descriptors = sift.detectAndCompute(img, None)
-    keypoints, descriptors = sift(img)
+    detector = SIFT()
+    descriptor = detector.detect_and_extract(img)
+
 
     emotions.append(emotion)
 
-    final_train.append(descriptors)
+    final_train.append(descriptor)
     if i == 0:
         print(final_train[0])
     i += 1
@@ -73,11 +75,12 @@ for path, emotion in images_test:
     # Extraemos el vector de características utilizando SIFT
     #sift = cv2.SIFT_create()
     #keypoints, descriptors = sift.detectAndCompute(img, None)
-    keypoints, descriptors = sift(img)
+    detector = SIFT()
+    descriptor = detector.detect_and_extract(img)
 
     emotions_test.append(emotion)
 
-    final_test.append(descriptors)
+    final_test.append(descriptor)
 
 ##########################################################################
 # Convertir los datos de entrada a un array de NumPy homogéneo

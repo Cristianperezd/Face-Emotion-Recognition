@@ -38,7 +38,7 @@ class FaceRecognition():
         minNeighbors=5,
         minSize=(30,30),
         maxSize=(200,200))
-      return image,faces
+      return gray,faces
     
     def detect_faces(self,img_path):
       image, faces = self.get_faces(img_path)
@@ -51,10 +51,4 @@ class FaceRecognition():
       return faces_list
 
 
-face_rec = FaceRecognition()
-
-for faces in face_rec.detect_faces('orla16-17b.jpg'):
-  cv2.imshow('image',faces)
-  cv2.waitKey(0)
-  cv2.destroyAllWindows()
 

@@ -218,13 +218,17 @@ print("Puntuación de validación cruzada del mejor modelo:")
 print(grid_search.best_score_)
 """
 
-rfc = RandomForestClassifier()
+rfc = RandomForestClassifier(max_depth=50, n_estimators=1000)
 #rfc = RandomForestClassifier(bootstrap=True, criterion='gini', max_depth=9,max_features=None, min_samples_leaf=1, min_samples_split=8, n_estimators=47)
 
 
 rfc.fit(X, y)
+accuracy_train = rfc.score(X, y)
 accuracy = rfc.score(X_test, y_test)
-print("Accuracy:", accuracy*100)
+
+
+print("Accuracy train:", accuracy_train*100)
+print("Accuracy test:", accuracy*100)
 
 """
 # Guardar el modelo en un archivo llamado "modelo_knn.joblib"
