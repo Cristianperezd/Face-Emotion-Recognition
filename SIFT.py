@@ -5,19 +5,10 @@ import time
 import joblib
 from skimage.filters import median
 from skimage.exposure import equalize_hist
-
-from scipy import ndimage as ndi
-
-from skimage.feature import SIFT
+from skimage.feature import sift
 import numpy as np
-import sklearn
-
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint
-from sklearn.model_selection import GridSearchCV
-
 from sklearn.model_selection import train_test_split
 
 
@@ -29,7 +20,7 @@ emotion_folders = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surpr
 images = []
 for emotion_folder in emotion_folders:
     emotion_folder_path = os.path.join(train_folder, emotion_folder)
-    for image_file in os.listdir(emotion_folder_path):
+    for image_file in os.listdir(emotion_folder_path)[:10]:
         image_path = os.path.join(emotion_folder_path, image_file)
         label = emotion_folders.index(emotion_folder)
         images.append((image_path, label))
@@ -37,7 +28,7 @@ for emotion_folder in emotion_folders:
 images_test = []
 for emotion_folder in emotion_folders:
     emotion_folder_path = os.path.join(test_folder, emotion_folder)
-    for image_file in os.listdir(emotion_folder_path):
+    for image_file in os.listdir(emotion_folder_path)[:10]:
         image_path = os.path.join(emotion_folder_path, image_file)
         label = emotion_folders.index(emotion_folder)
         images_test.append((image_path, label))
@@ -46,6 +37,47 @@ for emotion_folder in emotion_folders:
 #########################################################
 ################IMPLEMENTACIÓ SIFT#######################
 #########################################################
+
+final_train = []
+
+emotions = []
+i = 0
+for path, emotion in images:
+
+    img = io.imread(path)
+    img = median(img)
+    img = equalize_hist(img)
+
+    # Extraemos el vector de características utilizando SIFT
+    #sift = cv2.SIFT_create()
+    #keypoints, descriptors = sift.detectAndCompute(img, None)
+    keypoints, descriptors = sift(img)
+
+    emotions.append(emotion)
+
+    final_train.append(descriptors)
+    if i == 0:
+        print(final_train[0])
+    i += 1
+
+
+emotions_test = []
+final_test = []
+
+for path, emotion in images_test:
+
+    img = io.imread(path)
+    img = median(img)
+    img = equalize_hist(img)
+
+    # Extraemos el vector de características utilizando SIFT
+    #sift = cv2.SIFT_create()
+    #keypoints, descriptors = sift.detectAndCompute(img, None)
+    keypoints, descriptors = sift(img)
+
+    emotions_test.append(emotion)
+
+    final_test.append(descriptors)
 
 ##########################################################################
 # Convertir los datos de entrada a un array de NumPy homogéneo
